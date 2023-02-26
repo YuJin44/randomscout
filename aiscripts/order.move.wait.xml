@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<diff>
+  <replace sel="/aiscript/attention/actions/do_if[@value='this.isplayerowned and not this.isclass.computer and not this.assignedcontrolled.nextorder and (not this.assignedcontrolled.commander or (this.assignedcontrolled.commander == player.occupiedship)) and notification.npc_await_orders.active']/@value">this.ship.defaultorder.id != 'RandomScout' and this.isplayerowned and not this.isclass.computer and not this.assignedcontrolled.nextorder and (not this.assignedcontrolled.commander or (this.assignedcontrolled.commander == player.occupiedship)) and notification.npc_await_orders.active</replace>
+</diff>

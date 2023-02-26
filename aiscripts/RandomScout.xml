@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RandomScout Ai, Created by Language. Version 1-->
+<aiscript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="RandomScout" xsi:noNamespaceSchemaLocation="aiscripts.xsd" version="1">
+  <order id="RandomScout" name="RandomScout" description="RandomScout" category="navigation" infinite="true">
+    <params>
+      <param name="gatesDistance" default="3" type="number" text="Scout Gate Distance" comment="Max gate distance to serve stations, only when homebound.">
+        <input_param name="startvalue" value="0"/>
+        <input_param name="min" value="0"/>
+        <input_param name="max" value="@this.ship.pilot.skill.piloting * 2"/>
+        <input_param name="step" value="1"/>
+      </param>
+    </params>
+    <skill min="0"/> <!-- Not any hotshot can be a randomscout, theres standards ye know? -->
+    <requires>
+      <match shiptype="shiptype.lasertower" negate="true"/>
+    </requires>
+  </order>
+
+  <interrupts>
+    <handler ref="SectorChangeHandler"/>
+    <handler ref="AttackHandler"/>
+    <handler ref="MissileLockHandler"/>
+    <handler ref="ScannedHandler"/>
+    <handler ref="InspectedHandler"/>
+    <handler ref="FoundAbandonedHandler"/>
+    <handler ref="ResupplyHandler"/>
+    <handler ref="JobRemoveRequestHandler"/>
+    <handler ref="TargetInvalidHandler"/>
+  </interrupts>
+
+  <init>
+    <set_order_syncpoint_reached order="this.ship.order"/>
+
+    <set_command_action commandaction="commandaction.calculating"/>
+
+  </init>
+
+  <attention min="unknown">
+    <actions>
+      <run_script name="'lib.find.sectors.inrange'" result="$sectors">
+        <param name="refobject" value="this.ship"/>
+        <param name="maxgatedistance" value="$gatesDistance"/>
+      </run_script>
+      <remove_value name="$sectors.{$sectors.indexof.{this.sector}}"/>
+      <set_value name="$sectors.{1}" exact="this.sector" operation="insert"/>
+      <do_all exact="$sectors.count" counter="$nr" reverse="true">
+        <do_if value="$sectors.{$nr}.relationto.{this.ship} lt -0.01">
+          <remove_value name="$sectors.{$nr}"/>
+        </do_if>
+      </do_all>
+      <find_ship name="$ships" owner="this.ship.owner" space="player.galaxy" shiptype="this.ship.type" multiple="true"/>
+      <remove_value name="$ships.{$ships.indexof.{this.ship}}"/>
+      <do_all exact="$ships.count" counter="$nr">
+        <do_if value="$ships.{$nr}.defaultorder.id == this.ship.defaultorder.id">
+          <remove_value name="$sectors.{$sectors.indexof.{$ships.{$nr}.order.$destination.{1}}}"/>
+        </do_if>
+      </do_all>
+
+      <do_all exact="$sectors.count" counter="$nrs">
+        <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions"/>
+        <set_value name="$sector" exact="$sectors.{$nrs}"/>
+        <find_station hastradeoffer="true" space="$sector" name="$station">
+          <match tradesknownto="this.owner" negate="true"/>
+          <match_relation_to object="this.ship" relation="neutral" comparison="ge"/>
+        </find_station>
+        <do_if value="$station" negate="true">
+          <continue/>
+        </do_if>
+        <do_if value="$nrs==1">
+          <create_position name="$positionB" space="$sector" value="$station.position" object="$station.zone"/>
+          <create_position name="$positionA" space="this.sector" value="this.ship.position" object="this.ship.zone"/>
+          <set_value name="$ax" exact="$positionA.x"/>
+          <set_value name="$ay" exact="$positionA.y"/>
+          <set_value name="$az" exact="$positionA.z"/>
+          <set_value name="$tx" exact="$positionB.x-$ax"/>
+          <set_value name="$ty" exact="$positionB.y-$ay"/>
+          <set_value name="$tz" exact="$positionB.z-$az"/>
+          <set_value name="$d" exact="sqrt($tx^2+$ty^2+$tz^2)"/>
+          <set_value name="$r" exact="($d-20000.0)/$d"/>
+          <set_value name="$position" exact="position.[$ax+$tx*$r,$ay+$ty*$r,$az+$tz*$r]"/>
+          <resume label="foundStation"/>
+        </do_if>
+        <resume label="sectorMiddle"/>
+      </do_all>
+      <set_value name="$sector" list="$sectors"/>
+      <label name="sectorMiddle"/>
+      <set_value name="$position" exact="$sector.coreposition"/>
+      <label name="foundStation"/>
+      <create_order id="'MoveWait'" object="this.ship" immediate="true">
+        <param name="destination" value="[$sector, $position]"/>
+        <param name="timeout" value="5s"/>
+      </create_order>
+    </actions>
+  </attention>
+</aiscript>
