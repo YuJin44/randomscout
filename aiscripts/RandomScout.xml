@@ -84,7 +84,7 @@
           <set_value name="$ty" exact="$positionB.y-$ay"/>
           <set_value name="$tz" exact="$positionB.z-$az"/>
           <set_value name="$d" exact="sqrt($tx^2+$ty^2+$tz^2)"/>
-          <set_value name="$r" exact="($d-10000.0)/$d"/>
+          <set_value name="$r" exact="($d-15000.0)/$d"/>
           <set_value name="$position" exact="position.[$ax+$tx*$r,$ay+$ty*$r,$az+$tz*$r]"/>
           <resume label="foundStation"/>
         </do_if>
