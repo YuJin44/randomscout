@@ -43,11 +43,6 @@
       </run_script>
       <remove_value name="$sectors.{$sectors.indexof.{this.sector}}"/>
       <set_value name="$sectors.{1}" exact="this.sector" operation="insert"/>
-      <do_all exact="$sectors.count" counter="$nr" reverse="true">
-        <do_if value="$sectors.{$nr}.relationto.{this.ship} lt -0.01">
-          <remove_value name="$sectors.{$nr}"/>
-        </do_if>
-      </do_all>
       <find_ship name="$ships" owner="this.ship.owner" space="player.galaxy" shiptype="this.ship.type" multiple="true"/>
       <remove_value name="$ships.{$ships.indexof.{this.ship}}"/>
       <do_all exact="$ships.count" counter="$nr">
@@ -56,14 +51,40 @@
         </do_if>
       </do_all>
 
-      <do_all exact="$sectors.count" counter="$nrs">
-        <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions"/>
-        <set_value name="$sector" exact="$sectors.{$nrs}"/>
+      <do_for_each in="$sectors" name="$sector" counter="$nrs">
+        <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions" />
+        <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'Sector: %s'.[$sector.knownname]"/>
+        <do_if value="$sector.relationto.{this.ship} lt -0.01">
+          <continue />
+        </do_if>
         <find_station hastradeoffer="true" space="$sector" name="$station">
           <match tradesknownto="this.owner" negate="true"/>
           <match_relation_to object="this.ship" relation="neutral" comparison="ge"/>
         </find_station>
         <do_if value="$station" negate="true">
+          <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'Sector: %s, no stations: %s'.[$sector.knownname, $station]"/>
+          <find_object space="$sector" name="$gates" multiple="true"
+            class="[class.gate, class.highwayentrygate]" />
+          <do_for_each in="$gates" name="$gate" reverse="true">
+            <do_if value="$gate.destination == null">
+              <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'skipping, no dest: %s'.[$gate.name]"/>
+              <continue />
+            </do_if>
+            <set_value name="$destination" exact="$gate.destination.sector" />
+            <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'Found gate destination: %s'.[$destination.name]"/>
+            <do_if
+              value="$destination.isknown or $destination.relationto.{this.ship} lt -0.01 or 
+                $destination.isblacklisted.{blacklisttype.sectortravel}.{blacklistgroup.civilian}.{this.ship} or 
+                $destination.isblacklisted.{blacklisttype.sectoractivity}.{blacklistgroup.civilian}.{this.ship}">
+              <continue />
+            </do_if>
+            <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'moving to unknown: %s'.[$destination.name]"/>
+            <set_known object="$destination" known="true"/>
+            <set_value name="$sector" exact="$destination"/>
+            <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'jumping label: %s'.[$sector.name]"/>
+            <resume label="sectorMiddle" />
+            <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'fail'"/>
+          </do_for_each>
           <continue/>
         </do_if>
         <do_if value="$nrs==1">
@@ -81,13 +102,16 @@
           <resume label="foundStation"/>
         </do_if>
         <resume label="sectorMiddle"/>
-      </do_all>
+      </do_for_each>
       <set_value name="$sector" list="$sectors"/>
+      <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'before middle: %s'.[$sector.name]"/>
       <label name="sectorMiddle"/>
+      <write_to_logbook category="upkeep" title="'RandomScout: '+this.ship.knownname+' ( '+this.ship.idcode+' )'" text="'after middle: %s'.[$sector.name]"/>
       <set_value name="$position" exact="$sector.coreposition"/>
       <label name="foundStation"/>
       <create_order id="'MoveWait'" object="this.ship" immediate="true">
         <param name="destination" value="[$sector, $position]"/>
+        <param name="playerprecise" value="true" />
         <param name="timeout" value="5s"/>
       </create_order>
     </actions>
