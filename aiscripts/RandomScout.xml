@@ -45,22 +45,29 @@
       <set_value name="$sectors.{1}" exact="this.sector" operation="insert"/>
       <find_ship name="$ships" owner="this.ship.owner" space="player.galaxy" shiptype="this.ship.type" multiple="true"/>
       <remove_value name="$ships.{$ships.indexof.{this.ship}}"/>
-      <do_all exact="$ships.count" counter="$nr">
-        <do_if value="$ships.{$nr}.defaultorder.id == this.ship.defaultorder.id">
-          <remove_value name="$sectors.{$sectors.indexof.{$ships.{$nr}.order.$destination.{1}}}"/>
+      <do_all exact="$ships.count" counter="$nr" reverse="true">
+        <do_if value="$ships.{$nr}.defaultorder.id != this.ship.defaultorder.id">
+          <remove_value name="$ships.{$nr}"/>
         </do_if>
       </do_all>
 
       <do_for_each in="$sectors" name="$sector" counter="$nrs">
         <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions" />
-        <do_if value="$sector.relationto.{this.ship} lt -0.01">
-          <continue />
+        <set_value name="$skip" exact="$sector.relationto.{this.ship} lt -0.01"/>
+        <do_if value="$skip" negate="true">
+          <do_for_each in="$ships" name="$ship">
+            <do_if value="$ship.order.$destination.{1} == $sector">
+              <set_value name="$skip" exact="true"/>
+            </do_if>
+          </do_for_each>
         </do_if>
-        <find_station hastradeoffer="true" space="$sector" name="$station">
-          <match tradesknownto="this.owner" negate="true"/>
-          <match_relation_to object="this.ship" relation="neutral" comparison="ge"/>
-        </find_station>
-        <do_if value="$station" negate="true">
+        <do_if value="$skip" negate="true">
+          <find_station hastradeoffer="true" space="$sector" name="$station">
+            <match tradesknownto="this.owner" negate="true"/>
+            <match_relation_to object="this.ship" relation="neutral" comparison="ge"/>
+          </find_station>
+        </do_if>
+        <do_if value="@$station" negate="true">
           <find_sector_in_range object="this.ship" maxdistance="$gatesDistance" known="false" name="$unknownsec" >
             <match_gate_distance max="1" object="$sector"/>
             <match_use_blacklist group="blacklistgroup.civilian" type="blacklisttype.sectortravel" object="this.ship"/>
