@@ -44,7 +44,7 @@
           <continue/>
         </do_if>
         <create_order object="$subordinate" default="true" id ="'RandomScout'">
-          <param name="gatesDistance"          value="$gatesDistance"/>
+          <param name="gatesDistance"          value="[$gatesDistance, @$subordinate.pilot.skill.piloting * 2].min"/>
         </create_order>
         <set_object_commander object="$subordinate" commander="this.ship" assignment="assignment.trade"/>
         <wait min="5s" max="10s"/>
