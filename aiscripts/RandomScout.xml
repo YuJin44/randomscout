@@ -29,10 +29,6 @@
   </interrupts>
 
   <init>
-    <substitute_text text="$debugFileName" source="this.ship.knownname+' - '+this.ship.idcode">
-      <replace string="'('" with="''"/>
-      <replace string="')'" with="''"/>
-    </substitute_text>
     <set_order_syncpoint_reached order="this.ship.order"/>
 
     <set_command_action commandaction="commandaction.calculating"/>
@@ -56,19 +52,15 @@
       </do_all>
 
       <do_for_each in="$sectors" name="$sector" counter="$nrs">
-        <debug_to_file name="$debugFileName" directory="'RandomScout'" text="'scanning sec: %s'.[$sector.knownname]"/>
         <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions" />
         <set_value name="$skip" exact="$sector.relationto.{this.ship} lt -0.01"/>
         <do_if value="$skip" negate="true">
           <do_for_each in="$ships" name="$ship">
-            <debug_to_file name="$debugFileName" directory="'RandomScout'" text="'ship %s has target in %s'.[$ship.idcode, $ship.order.$destination.{1}.knownname]"/>
             <do_if value="$ship.order.$destination.{1} == $sector">
               <set_value name="$skip" exact="true"/>
-              <debug_to_file name="$debugFileName" directory="'RandomScout'" text="'skipping'"/>
               <break />
             </do_if>
           </do_for_each>
-          <debug_to_file name="$debugFileName" directory="'RandomScout'" text="'loop done'"/>
         </do_if>
         <do_if value="$skip" negate="true">
           <find_station hastradeoffer="true" space="$sector" name="$station">
