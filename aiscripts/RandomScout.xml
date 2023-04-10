@@ -37,6 +37,19 @@
 
   <attention min="unknown">
     <actions>
+      <!--here we want to copy settings to subordinates-->
+      <set_value name="$subordinates" exact="this.ship.subordinates"/>
+      <do_for_each in="$subordinates" name="$subordinate">
+        <do_if value="$subordinate.type == this.ship.type and $subordinate.assignment == assignment.defence" negate="true">
+          <continue/>
+        </do_if>
+        <create_order object="$subordinate" default="true" id ="'RandomScout'">
+          <param name="gatesDistance"          value="$gatesDistance"/>
+        </create_order>
+        <set_object_commander object="$subordinate" commander="this.ship" assignment="assignment.trade"/>
+        <wait min="5s" max="10s"/>
+      </do_for_each>
+      <remove_value name="$subordinates"/>
       <run_script name="'lib.find.sectors.inrange'" result="$sectors">
         <param name="refobject" value="this.ship"/>
         <param name="maxgatedistance" value="$gatesDistance"/>
