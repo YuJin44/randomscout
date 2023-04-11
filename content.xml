@@ -1,2 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<content id="RandomScout" name="RandomScout" description="RandomScout" author="Language" version="1" date="2019-03-23" save="0"/>
+<content id="RandomScout" name="RandomScout" description="Randomized scout logic" author="Language" version="100">
+  <text language="7" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="33" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="34" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="39" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="44" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="49" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="55" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="81" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="82" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="86" name="RandomScout" description="Randomized scout logic" author="Language"/>
+  <text language="88" name="RandomScout" description="Randomized scout logic" author="Language"/>
+</content>
