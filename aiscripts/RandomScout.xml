@@ -46,6 +46,8 @@
         <create_order object="$subordinate" default="true" id ="'RandomScout'">
           <param name="gatesDistance"          value="[$gatesDistance, @$subordinate.pilot.skill.piloting * 2].min"/>
         </create_order>
+        <release_commandeered_object object="$subordinate"/>
+        <wait min="800ms" max="1s"/>
         <set_object_commander object="$subordinate" commander="this.ship" assignment="assignment.trade"/>
         <wait min="5s" max="10s"/>
       </do_for_each>
