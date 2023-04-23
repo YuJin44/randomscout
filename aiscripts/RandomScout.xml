@@ -55,6 +55,7 @@
       <run_script name="'lib.find.sectors.inrange'" result="$sectors">
         <param name="refobject" value="this.ship"/>
         <param name="maxgatedistance" value="$gatesDistance"/>
+        <param name="usesectordistance" value="true"/>
       </run_script>
       <remove_value name="$sectors.{$sectors.indexof.{this.sector}}"/>
       <set_value name="$sectors.{1}" exact="this.sector" operation="insert"/>
@@ -68,7 +69,7 @@
 
       <do_for_each in="$sectors" name="$sector" counter="$nrs">
         <wait min="1ms" max="100ms" comment="Avoid performance peaks with find functions" />
-        <set_value name="$skip" exact="$sector.relationto.{this.ship} lt -0.01"/>
+        <set_value name="$skip" exact="$sector.relationto.{this.ship} lt -0.01 or $sector.isblacklisted.{blacklisttype.sectoractivity}.{blacklistgroup.civilian}.{this.ship}"/>
         <do_if value="$skip" negate="true">
           <do_for_each in="$ships" name="$ship">
             <do_if value="$ship.order.$destination.{1} == $sector">
@@ -114,7 +115,7 @@
         <resume label="sectorMiddle"/>
       </do_for_each>
       <do_all exact="$sectors.count" counter="$nr" reverse="true">
-        <do_if value="$sectors.{$nr}.relationto.{this.ship} lt -0.01">
+        <do_if value="$sectors.{$nr}.relationto.{this.ship} lt -0.01 or $sectors.{$nr}.isblacklisted.{blacklisttype.sectoractivity}.{blacklistgroup.civilian}.{this.ship}">
           <remove_value name="$sectors.{$nr}"/>
         </do_if>
       </do_all>
