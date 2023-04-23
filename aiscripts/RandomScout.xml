@@ -113,6 +113,11 @@
         </do_if>
         <resume label="sectorMiddle"/>
       </do_for_each>
+      <do_all exact="$sectors.count" counter="$nr" reverse="true">
+        <do_if value="$sectors.{$nr}.relationto.{this.ship} lt -0.01">
+          <remove_value name="$sectors.{$nr}"/>
+        </do_if>
+      </do_all>
       <set_value name="$sector" list="$sectors"/>
       <label name="sectorMiddle"/>
       <set_value name="$position" exact="$sector.coreposition"/>
